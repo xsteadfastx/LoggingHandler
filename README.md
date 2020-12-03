@@ -11,7 +11,7 @@ Just a simple zerolog based request logging http middleware. It also sets a `X-R
 ## Usage
 
         handler := logginghandler.Handler(http.HandlerFunc(myHandler))
-        http.HandleFunc("/", handler)
+        http.Handle("/", handler)
         log.Fatal().Msg(http.ListenAndServe(":5000", nil).Error())
 
 In other handlers you can access the UUID:

@@ -1,4 +1,4 @@
-module git.xsfx.dev/xsteadfastx/logginghandler
+module go.xsfx.dev/logginghandler
 
 go 1.15
 

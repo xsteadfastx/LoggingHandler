@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"git.xsfx.dev/xsteadfastx/logginghandler"
 	"github.com/stretchr/testify/assert"
+	"go.xsfx.dev/logginghandler"
 )
 
 func testHandler(w http.ResponseWriter, r *http.Request) {

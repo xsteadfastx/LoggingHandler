@@ -6,7 +6,7 @@ Just a simple zerolog based request logging http middleware. It also sets a `X-R
 
 ## Install
 
-        go get -v git.xsfx.dev/xsteadfastx/logginghandler
+        go get -v go.xsfx.dev/logginghandler
 
 ## Usage
 

@@ -24,5 +24,5 @@ In other handlers you can access the UUID:
 
 The already prepared logger is also available:
 
-        l := loggerhandler.Logger(r)
+        l := logginghandler.Logger(r)
         l.Info().Msg("foo bar")

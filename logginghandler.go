@@ -29,7 +29,6 @@ func Handler(next http.Handler) http.Handler {
 		r.Header.Set("X-Request-ID", uuid)
 		logger := Logger(r)
 		logger.Info().
-			Str("uuid", uuid).
 			Str("method", r.Method).
 			Str("user-agent", r.UserAgent()).
 			Str("proto", r.Proto).

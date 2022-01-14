@@ -12,7 +12,8 @@ Just a simple zerolog based request logging http middleware. It also sets a `X-R
 
 ## Usage
 
-        handler := logginghandler.Handler(http.HandlerFunc(myHandler))
+        logger := log.With().Logger()
+        handler := logginghandler.Handler(logger)(http.HandlerFunc(myHandler))
         http.Handle("/", handler)
         log.Fatal().Msg(http.ListenAndServe(":5000", nil).Error())
 

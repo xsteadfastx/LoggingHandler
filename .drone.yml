@@ -3,32 +3,95 @@ kind: pipeline
 name: default
 type: docker
 
+golang-image: &golang-image golang:1.17-alpine
+
+gobin-volume: &gobin-volume
+  name: gobin
+  path: /go/bin
+
+usr-volume: &usr-volume
+  name: usr
+  path: /usr
+
+deps-command: &deps-command apk add build-base git
+
 steps:
-  - name: fetch
+  - name: tags
     image: alpine/git
     commands:
       - git fetch --tags
 
-  - name: test
-    image: golang
+  - name: install-tools
+    image: *golang-image
+    volumes:
+      - *gobin-volume
+      - *usr-volume
     commands:
-      - make test
+      - *deps-command
+      - make install-tools
 
   - name: lint
-    image: golangci/golangci-lint:v1.31-alpine
+    image: *golang-image
+    volumes:
+      - *gobin-volume
+      - *usr-volume
     commands:
-      - apk add --no-cache make
       - make lint
+    depends_on:
+      - tags
+      - install-tools
+
+  - name: test
+    image: *golang-image
+    volumes:
+      - *gobin-volume
+      - *usr-volume
+    commands:
+      - make test
+    depends_on:
+      - install-tools
+      - tags
+      - lint
+
+  - name: build
+    image: *golang-image
+    volumes:
+      - *gobin-volume
+      - *usr-volume
+    commands:
+      - make build
+    depends_on:
+      - tags
+      - lint
+      - test
+      - install-tools
+    when:
+      event:
+        exclude:
+          - tag
 
   - name: release
-    image: golang
+    image: *golang-image
+    volumes:
+      - *gobin-volume
+      - *usr-volume
     environment:
       GITEA_TOKEN:
         from_secret: gitea_token
     commands:
-      - curl -sL https://git.io/goreleaser | bash
+      - goreleaser release --rm-dist
     depends_on:
       - test
       - lint
+      - tags
+      - install-tools
     when:
-      event: tag
+      event:
+        - tag
+
+volumes:
+  - name: gobin
+    temp: {}
+
+  - name: usr
+    temp: {}

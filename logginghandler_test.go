@@ -12,13 +12,19 @@ import (
 )
 
 func Example() {
-	handler := logginghandler.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	logger := log.With().Logger()
+
+	handler := logginghandler.Handler(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := logginghandler.Logger(r)
+
+		logger.Info().Msg("this is a request")
+	}))
+
 	http.Handle("/", handler)
 	log.Fatal().Msg(http.ListenAndServe(":5000", nil).Error())
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
-	log.Print("got request")
 }
 
 func TestUUID(t *testing.T) {
@@ -28,10 +34,9 @@ func TestUUID(t *testing.T) {
 	assert.NoError(err)
 
 	rr := httptest.NewRecorder()
-	handler := logginghandler.Handler(http.HandlerFunc(testHandler))
+	handler := logginghandler.Handler(log.With().Logger())(http.HandlerFunc(testHandler))
 
 	handler.ServeHTTP(rr, req)
 
 	assert.NotEmpty(rr.Header().Get("X-Request-ID"))
-	log.Print(rr.Header())
 }

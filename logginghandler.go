@@ -5,39 +5,42 @@ package logginghandler
 import (
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/hlog"
 )
 
 // GetUUID gets the requests UUID from a request.
 func GetUUID(r *http.Request) string {
-	return r.Header.Get("X-Request-ID")
+	uuid, ok := hlog.IDFromRequest(r)
+	if !ok {
+		return ""
+	}
+
+	return uuid.String()
 }
 
 // Logger returns a logger with the UUID set.
 func Logger(r *http.Request) zerolog.Logger {
-	logger := log.With().Str("uuid", GetUUID(r)).Logger()
-
-	return logger
+	return *hlog.FromRequest(r)
 }
 
-// Handler is the http middleware handler.
-func Handler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		uuid := uuid.New().String()
-		r.Header.Set("X-Request-ID", uuid)
-		logger := Logger(r)
-		logger.Info().
-			Str("method", r.Method).
-			Str("user-agent", r.UserAgent()).
-			Str("proto", r.Proto).
-			Str("referer", r.Referer()).
-			Str("request-url", r.URL.String()).
-			Str("remote", r.RemoteAddr).
-			Msg("")
-
-		w.Header().Set("X-Request-ID", uuid)
-		next.ServeHTTP(w, r)
-	})
+// Handler sets up all the logging.
+func Handler(logger zerolog.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return hlog.NewHandler(logger)(
+			hlog.RemoteAddrHandler("remote")(
+				hlog.UserAgentHandler("user-agent")(
+					hlog.RefererHandler("referer")(
+						hlog.MethodHandler("method")(
+							hlog.RequestIDHandler("uuid", "X-Request-ID")(
+								hlog.URLHandler("request-url")(
+									next,
+								),
+							),
+						),
+					),
+				),
+			),
+		)
+	}
 }

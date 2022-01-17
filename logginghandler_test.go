@@ -18,6 +18,8 @@ func Example() {
 		logger := logginghandler.Logger(r)
 
 		logger.Info().Msg("this is a request")
+
+		w.WriteHeader(http.StatusOK)
 	}))
 
 	http.Handle("/", handler)
@@ -25,6 +27,7 @@ func Example() {
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 func TestUUID(t *testing.T) {

@@ -4,11 +4,14 @@ GOLANGCI_LINT := $(GO) run github.com/golangci/golangci-lint/cmd/golangci-lint
 
 .PHONY: test
 test:
-	$(GO) test -v ./...
+	$(GO) test -count=1 -v ./...
 
 .PHONY: lint
 lint:
-	$(GOLANGCI_LINT) run --enable-all --disable=godox --timeout 10m
+	$(GOLANGCI_LINT) run \
+		--enable-all \
+		--disable=godox,varnamelen \
+		--timeout 10m
 
 .PHONY: tidy
 tidy:

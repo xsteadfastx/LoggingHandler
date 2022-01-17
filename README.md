@@ -6,24 +6,65 @@
 
 Just a simple zerolog based request logging http middleware. It also sets a `X-Request-ID` in the request and response headers.
 
+Powered by [github.com/rs/zerolog/hlog](https://github.com/rs/zerolog) and [github.com/justinas/alice](https://github.com/justinas/alice).
+
 ## Install
 
-        go get -v go.xsfx.dev/logginghandler
+```shell
+go get -v go.xsfx.dev/logginghandler
+```
 
 ## Usage
 
-        logger := log.With().Logger()
-        handler := logginghandler.Handler(logger)(http.HandlerFunc(myHandler))
-        http.Handle("/", handler)
-        log.Fatal().Msg(http.ListenAndServe(":5000", nil).Error())
+```golang
+logger := log.With().Logger()
+
+handler := logginghandler.Handler(logger)(
+    http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+        log := logginghander.Logger(r)
+        log.Info().Msg("hello world")
+
+        w.WriteHeader(http.StatusOK)
+
+        return
+    })
+)
+
+http.Handle("/", handler)
+log.Fatal().Msg(http.ListenAndServe(":5000", nil).Error())
+```
+
+or with [alice](https://github.com/justinas/alice)
+
+```golang
+logger := log.With().Logger()
+chain := alice.New(logginghandler.Handler(logger)).Then(
+    http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+        log := logginghander.Logger(r)
+        log.Info().Msg("hello world")
+
+        w.WriteHeader(http.StatusOK)
+
+        return
+    })
+)
+
+http.Handle("/", chain)
+
+log.Fatal().Err(http.ListenAndServe(":5000", nil)).Msg("goodbye")
+```
 
 In other handlers you can access the UUID:
 
-        func anotherHandler(w http.ResponseWriter, r *http.Request) {
-                fmt.Fprintf(w, "your uuid is: %s", logginghandler.GetUUID(r))
-        }
+```golang
+func anotherHandler(w http.ResponseWriter, r *http.Request) {
+        fmt.Fprintf(w, "your uuid is: %s", logginghandler.GetUUID(r))
+}
+```
 
 The already prepared logger is also available:
 
-        l := logginghandler.Logger(r)
-        l.Info().Msg("foo bar")
+```golang
+l := logginghandler.Logger(r)
+l.Info().Msg("foo bar")
+```

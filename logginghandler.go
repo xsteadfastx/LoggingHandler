@@ -4,7 +4,9 @@ package logginghandler
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 )
@@ -24,23 +26,26 @@ func Logger(r *http.Request) zerolog.Logger {
 	return *hlog.FromRequest(r)
 }
 
-// Handler sets up all the logging.
-func Handler(logger zerolog.Logger) func(http.Handler) http.Handler {
+func Handler(log zerolog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		return hlog.NewHandler(logger)(
-			hlog.RemoteAddrHandler("remote")(
-				hlog.UserAgentHandler("user-agent")(
-					hlog.RefererHandler("referer")(
-						hlog.MethodHandler("method")(
-							hlog.RequestIDHandler("uuid", "X-Request-ID")(
-								hlog.URLHandler("request-url")(
-									next,
-								),
-							),
-						),
-					),
-				),
-			),
-		)
+		chain := alice.New(
+			hlog.NewHandler(log),
+			hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
+				hlog.FromRequest(r).Info().
+					Str("method", r.Method).
+					Str("proto", r.Proto).
+					Stringer("request-url", r.URL).
+					Int("status", status).
+					Int("size", size).
+					Dur("duration", duration).
+					Msg("")
+			}),
+			hlog.RemoteAddrHandler("remote"),
+			hlog.UserAgentHandler("user-agent"),
+			hlog.RefererHandler("referer"),
+			hlog.RequestIDHandler("uuid", "X-Request-ID"),
+		).Then(next)
+
+		return chain
 	}
 }

@@ -681,6 +681,9 @@ github.com/jirfag/go-printf-func-name/pkg/analyzer
 github.com/jmespath/go-jmespath
 # github.com/julz/importas v0.0.0-20210419104244-841f0c0fe66d
 github.com/julz/importas
+# github.com/justinas/alice v1.2.0
+## explicit
+github.com/justinas/alice
 # github.com/kevinburke/ssh_config v1.1.0
 github.com/kevinburke/ssh_config
 # github.com/kisielk/errcheck v1.6.0

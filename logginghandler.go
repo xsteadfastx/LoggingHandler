@@ -12,13 +12,13 @@ import (
 )
 
 // GetUUID gets the requests UUID from a request.
-func GetUUID(r *http.Request) string {
+func GetUUID(r *http.Request) (string, bool) {
 	uuid, ok := hlog.IDFromRequest(r)
 	if !ok {
-		return ""
+		return "", false
 	}
 
-	return uuid.String()
+	return uuid.String(), true
 }
 
 // Logger returns a logger with the UUID set.

@@ -58,7 +58,19 @@ In other handlers you can access the UUID:
 
 ```golang
 func anotherHandler(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "your uuid is: %s", logginghandler.GetUUID(r))
+    log := logginghandler.Logger(r)
+
+    uuid, ok := logginghandler.GetUUID(r)
+    if !ok {
+        log.Error().Err(err).Msg("could not find uuid")
+        w.WriteHeader(http.StatusInternalServerError)
+
+        return
+    }
+
+    fmt.Fprintf(w, "your uuid is: %s", uuid)
+
+    return
 }
 ```
 

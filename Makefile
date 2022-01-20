@@ -1,6 +1,6 @@
 GO := go
-GORELEASER := $(GO) run github.com/goreleaser/goreleaser
-GOLANGCI_LINT := $(GO) run github.com/golangci/golangci-lint/cmd/golangci-lint
+GORELEASER := $(GO) run github.com/goreleaser/goreleaser@v1.3.1
+GOLANGCI_LINT := $(GO) run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
 
 .PHONY: test
 test:
@@ -18,14 +18,14 @@ tidy:
 	$(GO) mod tidy
 	$(GO) mod vendor
 
-.PHONY: install-tools
-install-tools:
-	$(GO) list -f '{{range .Imports}}{{.}} {{end}}' third_party/tools/tools.go | xargs go install -v
-
 .PHONY: build
 build:
 	$(GORELEASER) build --rm-dist --snapshot
 
 .PHONY: release
 release:
+	$(GORELEASER) release --rm-dist
+
+.PHONY: release-snapshot
+release-snapshot:
 	$(GORELEASER) release --rm-dist --snapshot --skip-publish

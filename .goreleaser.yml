@@ -1,12 +1,12 @@
----
 gitea_urls:
   api: https://git.xsfx.dev/api/v1/
-
 changelog:
   filters:
     exclude:
-      - "^Bump version:"
-      - ^\[NO CHANGELOG\]
-
+    - "^Bump version:"
+    - ^\[NO CHANGELOG\]
+    - "^chore"
+    - "^ci"
+    - "^build"
 builds:
-  - skip: true
+- skip: true

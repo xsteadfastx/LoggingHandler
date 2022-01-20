@@ -30,7 +30,7 @@ steps:
   - make lint
   depends_on:
   - tags
-  - install-tools
+  - install-deps
 - name: test
   image: *golang-image
   volumes:
@@ -39,7 +39,7 @@ steps:
   commands:
   - make test
   depends_on:
-  - install-tools
+  - install-deps
   - tags
   - lint
 - name: build
@@ -53,7 +53,7 @@ steps:
   - tags
   - lint
   - test
-  - install-tools
+  - install-deps
   when:
     event:
       exclude:
@@ -72,7 +72,7 @@ steps:
   - test
   - lint
   - tags
-  - install-tools
+  - install-deps
   when:
     event:
     - tag

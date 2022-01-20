@@ -14,14 +14,13 @@ steps:
   image: alpine/git
   commands:
   - git fetch --tags
-- name: install-tools
+- name: install-deps
   image: *golang-image
   volumes:
   - *gobin-volume
   - *usr-volume
   commands:
   - *deps-command
-  - make install-tools
 - name: lint
   image: *golang-image
   volumes:

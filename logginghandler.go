@@ -3,12 +3,14 @@
 package logginghandler
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
+	"github.com/rs/zerolog/log"
 )
 
 // GetUUID gets the requests UUID from a request.
@@ -21,9 +23,14 @@ func GetUUID(r *http.Request) (string, bool) {
 	return uuid.String(), true
 }
 
-// Logger returns a logger with the UUID set.
-func Logger(r *http.Request) zerolog.Logger {
+// FromRequest returns a logger with the UUID set from request.
+func FromRequest(r *http.Request) zerolog.Logger {
 	return *hlog.FromRequest(r)
+}
+
+// FromCtx returns a logger with the UUID set from ctx.
+func FromCtx(ctx context.Context) zerolog.Logger {
+	return *log.Ctx(ctx)
 }
 
 func Handler(log zerolog.Logger) func(http.Handler) http.Handler {

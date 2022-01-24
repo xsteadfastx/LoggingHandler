@@ -58,7 +58,7 @@ In other handlers you can access the UUID:
 
 ```golang
 func anotherHandler(w http.ResponseWriter, r *http.Request) {
-    log := logginghandler.Logger(r)
+    log := logginghandler.FromRequest(r)
 
     uuid, ok := logginghandler.GetUUID(r)
     if !ok {
@@ -77,6 +77,6 @@ func anotherHandler(w http.ResponseWriter, r *http.Request) {
 The already prepared logger is also available:
 
 ```golang
-l := logginghandler.Logger(r)
+l := logginghandler.FromRequest(r)
 l.Info().Msg("foo bar")
 ```

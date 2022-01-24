@@ -1,13 +1,17 @@
 package logginghandler_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.xsfx.dev/logginghandler"
 )
 
@@ -15,7 +19,7 @@ func Example() {
 	logger := log.With().Logger()
 
 	handler := logginghandler.Handler(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := logginghandler.Logger(r)
+		logger := logginghandler.FromRequest(r)
 
 		logger.Info().Msg("this is a request")
 
@@ -32,7 +36,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 
 func TestUUID(t *testing.T) {
 	t.Parallel()
-	assert := assert.New(t)
+	assert := require.New(t)
 	req, err := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
 	assert.NoError(err)
 
@@ -42,4 +46,32 @@ func TestUUID(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	assert.NotEmpty(rr.Header().Get("X-Request-ID"))
+}
+
+func TestFromCtx(t *testing.T) {
+	t.Parallel()
+	assert := require.New(t)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+	assert.NoError(err)
+
+	// Create buffer to store output.
+	var output bytes.Buffer
+
+	rr := httptest.NewRecorder()
+	handler := logginghandler.Handler(zerolog.New(&output))(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log := logginghandler.FromCtx(r.Context())
+		log.Info().Msg("hello world")
+	}))
+
+	handler.ServeHTTP(rr, req)
+
+	logs := strings.Split(output.String(), "\n")
+	assert.Len(logs, 3)
+
+	var jOut struct{ UUID string }
+
+	err = json.Unmarshal([]byte(logs[0]), &jOut)
+	assert.NoError(err)
+
+	assert.NotEmpty(jOut)
 }

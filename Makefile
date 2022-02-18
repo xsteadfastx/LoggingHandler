@@ -1,7 +1,7 @@
 GO := go
 
 GORELEASER := $(GO) run github.com/goreleaser/goreleaser@v1.3.1
-GOLANGCI_LINT := $(GO) run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.0
+GOLANGCI_LINT := $(GO) run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
 
 .PHONY: test
 test:

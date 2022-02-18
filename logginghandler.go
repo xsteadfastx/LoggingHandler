@@ -24,13 +24,27 @@ func GetUUID(r *http.Request) (string, bool) {
 }
 
 // FromRequest returns a logger with the UUID set from request.
+// If no one could be found, it will return the global one.
 func FromRequest(r *http.Request) zerolog.Logger {
+	l := hlog.FromRequest(r)
+
+	if l.GetLevel() == zerolog.Disabled {
+		return log.Logger
+	}
+
 	return *hlog.FromRequest(r)
 }
 
 // FromCtx returns a logger with the UUID set from ctx.
+// If no one could be found, it will return the global one.
 func FromCtx(ctx context.Context) zerolog.Logger {
-	return *log.Ctx(ctx)
+	l := *log.Ctx(ctx)
+
+	if l.GetLevel() == zerolog.Disabled {
+		return log.Logger
+	}
+
+	return l
 }
 
 func Handler(log zerolog.Logger) func(http.Handler) http.Handler {

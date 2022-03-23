@@ -1,2 +1,6 @@
 dist/*
 .envrc
+coverage.out
+report.xml
+.gobin/*
+.cache/*

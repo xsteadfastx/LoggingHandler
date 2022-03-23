@@ -13,6 +13,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func init() { //nolint:gochecknoinits
+	zerolog.DefaultContextLogger = &log.Logger
+}
+
 // GetUUID gets the requests UUID from a request.
 func GetUUID(r *http.Request) (string, bool) {
 	uuid, ok := hlog.IDFromRequest(r)
@@ -23,28 +27,16 @@ func GetUUID(r *http.Request) (string, bool) {
 	return uuid.String(), true
 }
 
-// FromRequest returns a logger with the UUID set from request.
+// FromRequest returns a logger set from request.
 // If no one could be found, it will return the global one.
-func FromRequest(r *http.Request) zerolog.Logger {
-	l := hlog.FromRequest(r)
-
-	if l.GetLevel() == zerolog.Disabled {
-		return log.Logger
-	}
-
-	return *hlog.FromRequest(r)
+func FromRequest(r *http.Request) *zerolog.Logger {
+	return hlog.FromRequest(r)
 }
 
-// FromCtx returns a logger with the UUID set from ctx.
+// FromCtx returns a logger set from ctx.
 // If no one could be found, it will return the global one.
-func FromCtx(ctx context.Context) zerolog.Logger {
-	l := *log.Ctx(ctx)
-
-	if l.GetLevel() == zerolog.Disabled {
-		return log.Logger
-	}
-
-	return l
+func FromCtx(ctx context.Context) *zerolog.Logger {
+	return zerolog.Ctx(ctx)
 }
 
 func Handler(log zerolog.Logger) func(http.Handler) http.Handler {

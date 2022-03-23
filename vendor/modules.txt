@@ -8,9 +8,9 @@ github.com/justinas/alice
 ## explicit
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/rs/xid v1.2.1
+# github.com/rs/xid v1.3.0
 github.com/rs/xid
-# github.com/rs/zerolog v1.20.0
+# github.com/rs/zerolog v1.26.1
 ## explicit
 github.com/rs/zerolog
 github.com/rs/zerolog/hlog

@@ -4,19 +4,19 @@ pipeline:
     commands:
     - git fetch --tags
   lint:
-    image: golang:1.17
+    image: golang:1.18
     commands:
     - make lint
   test:
-    image: golang:1.17
+    image: golang:1.18
     commands:
     - make test
   build:
-    image: golang:1.17
+    image: golang:1.18
     commands:
     - make build
   release:
-    image: golang:1.17
+    image: golang:1.18
     commands:
     - make release
     secrets:

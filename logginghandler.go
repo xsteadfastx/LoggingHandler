@@ -8,9 +8,15 @@ import (
 	"time"
 
 	"github.com/justinas/alice"
+	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
+)
+
+const (
+	UUIDKey    = "uuid"
+	UUIDHeader = "X-Request-ID"
 )
 
 func init() { //nolint:gochecknoinits
@@ -39,6 +45,43 @@ func FromCtx(ctx context.Context) *zerolog.Logger {
 	return zerolog.Ctx(ctx)
 }
 
+// RequestIDHandler looks in the header for an existing request id. Else it will create one.
+func RequestIDHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			id := r.Header.Get(UUIDHeader)
+
+			if id != "" {
+				ctx := r.Context()
+
+				log := zerolog.Ctx(ctx)
+
+				uuid, err := xid.FromString(id)
+				if err != nil {
+					log.Error().Err(err).Msg("couldnt parse uuid")
+
+					hlog.RequestIDHandler(UUIDKey, UUIDHeader)(next).ServeHTTP(w, r)
+
+					return
+				}
+
+				ctx = hlog.CtxWithID(ctx, uuid)
+				r = r.WithContext(ctx)
+
+				log.UpdateContext(func(c zerolog.Context) zerolog.Context {
+					return c.Str(UUIDKey, uuid.String())
+				})
+
+				w.Header().Set(UUIDHeader, uuid.String())
+
+				next.ServeHTTP(w, r)
+			} else {
+				hlog.RequestIDHandler(UUIDKey, UUIDHeader)(next).ServeHTTP(w, r)
+			}
+		})
+	}
+}
+
 func Handler(log zerolog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		chain := alice.New(
@@ -56,7 +99,7 @@ func Handler(log zerolog.Logger) func(http.Handler) http.Handler {
 			hlog.RemoteAddrHandler("remote"),
 			hlog.UserAgentHandler("user-agent"),
 			hlog.RefererHandler("referer"),
-			hlog.RequestIDHandler("uuid", "X-Request-ID"),
+			RequestIDHandler(),
 		).Then(next)
 
 		return chain

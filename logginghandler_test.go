@@ -1,3 +1,4 @@
+//nolint:funlen
 package logginghandler_test
 
 import (

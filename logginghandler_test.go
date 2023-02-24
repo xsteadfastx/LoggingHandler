@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -135,7 +136,7 @@ func TestRequestIDHandler(t *testing.T) {
 
 		err := json.Unmarshal([]byte(l), &out)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to unmarshal log: %w", err)
 		}
 
 		return out.UUID, nil
